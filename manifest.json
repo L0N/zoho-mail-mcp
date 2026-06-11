@@ -1,0 +1,20 @@
+{
+  "dxt_version": "0.1",
+  "name": "zoho-mail",
+  "display_name": "Zoho Mail",
+  "version": "1.0.0",
+  "description": "Read and search your Zoho Mail inbox. Tools: get_inbox, search_emails, read_email, get_folders, get_folder_mail, get_accounts.",
+  "author": {
+    "name": "Frank"
+  },
+  "server": {
+    "type": "binary",
+    "entry_point": "server.py",
+    "mcp_config": {
+      "command": "C:\\path\\to\\zoho-mail-mcp\\venv\\Scripts\\python.exe",
+      "args": [
+        "C:\\path\\to\\zoho-mail-mcp\\server.py"
+      ]
+    }
+  }
+}
