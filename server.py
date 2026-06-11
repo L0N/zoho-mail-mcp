@@ -60,18 +60,21 @@ def search_emails(query: str, limit: int = 20) -> list[dict]:
 
 
 @mcp.tool()
-def read_email(message_id: str) -> dict:
+def read_email(message_id: str, folder_id: str = "") -> dict:
     """
     Read the full content of a specific email including body text.
-    Get the message_id from get_inbox() or search_emails() results.
+    Get the message_id and folder_id from get_inbox() or search_emails() results.
 
     Args:
         message_id: The unique ID of the message to read.
+        folder_id: The folder containing the message (the folderId field on
+            inbox/search results). Optional but faster when provided —
+            without it every folder is tried in turn.
 
     Returns:
         Full message with subject, sender, recipients, date, and body.
     """
-    msg = zoho.read_email(message_id=message_id)
+    msg = zoho.read_email(message_id=message_id, folder_id=folder_id or None)
     return {
         "messageId": msg.get("messageId"),
         "subject": msg.get("subject"),

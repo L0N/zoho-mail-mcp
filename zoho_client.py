@@ -65,11 +65,13 @@ def get_inbox(limit: int = 20, account_id: str = None) -> list[dict]:
     """
     Fetch the most recent messages from the inbox.
     Returns summary info (subject, sender, date) — not full body.
+    Note: messages/view defaults to the inbox when folderId is omitted;
+    the param only accepts numeric folder IDs, not names like "inbox".
     """
     account_id = account_id or get_primary_account_id()
     data = _get(
         f"accounts/{account_id}/messages/view",
-        params={"limit": limit, "folderId": "inbox"},
+        params={"limit": limit},
     )
     return data.get("data", [])
 
@@ -90,13 +92,32 @@ def search_emails(
     return data.get("data", [])
 
 
-def read_email(message_id: str, account_id: str = None) -> dict:
+def read_email(message_id: str, folder_id: str = None, account_id: str = None) -> dict:
     """
     Fetch the full content of a single email including body and attachments list.
+    The content endpoint requires the folder ID in the path; if not supplied,
+    each folder is tried until the message is found.
     """
     account_id = account_id or get_primary_account_id()
-    data = _get(f"accounts/{account_id}/messages/{message_id}/content")
-    return data.get("data", {})
+
+    if folder_id:
+        data = _get(
+            f"accounts/{account_id}/folders/{folder_id}/messages/{message_id}/content"
+        )
+        return data.get("data", {})
+
+    for folder in get_folders(account_id):
+        try:
+            data = _get(
+                f"accounts/{account_id}/folders/{folder['folderId']}"
+                f"/messages/{message_id}/content"
+            )
+            return data.get("data", {})
+        except httpx.HTTPStatusError as e:
+            if e.response.status_code == 404:
+                continue
+            raise
+    raise RuntimeError(f"Message {message_id} not found in any folder.")
 
 
 def get_messages_in_folder(
